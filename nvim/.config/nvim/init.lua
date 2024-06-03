@@ -183,6 +183,9 @@ vim.api.nvim_set_keymap('n', '<leader>u', ':UndotreeToggle<CR>', { noremap = tru
 vim.api.nvim_set_keymap('n', '<leader>ff', '<cmd>Telescope find_files<cr>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>Telescope live_grep<cr>', { noremap = true, silent = true })
 
+-- Key binding to search the home directory
+vim.api.nvim_set_keymap('n', '<leader>fh', ':Telescope find_files search_dirs={"~"}<CR>', { noremap = true, silent = true })
+
 -- LSP settings
 local lspconfig = require('lspconfig')
 
@@ -206,6 +209,9 @@ lspconfig.clangd.setup{
     buf_set_keymap('n', 'gr', '<Cmd>lua vim.lsp.buf.references()<CR>', opts)
     -- Rename symbol
     buf_set_keymap('n', 'rn', '<Cmd>lua vim.lsp.buf.rename()<CR>', opts)
+    -- Code actions
+    buf_set_keymap('n', 'ca', '<Cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+
   end
 }
 
@@ -275,11 +281,18 @@ require'nvim-treesitter.configs'.setup {
 }
 
 -- Configure nvim-comment
-require('nvim_comment').setup({
+-- require('nvim_comment').setup({
     -- Use `gcc` to comment a line in normal mode
     -- Use `gc` to comment a selection in visual mode
-    line_mapping = "gcc",
-    operator_mapping = "gc",
+--    line_mapping = "gcc",
+--    operator_mapping = "gc",
+--})
+
+require('nvim_comment').setup({
+  -- Add any options here
+  line_mapping = "<leader>cc",
+  operator_mapping = "<leader>c",
+  comment_empty = false,
 })
 
 -- Autopairs setup
