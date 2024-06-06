@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Install oh-my-zsh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+
+# Install powerlevel10k
+mkdir -p $HOME/.oh-my-zsh/custom
+export ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"
+echo "ZSH_CUSTOM: $ZSH_CUSTOM"
+git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
+
+# Install plugins
+git clone https://github.com/zsh-users/zsh-autosuggestions.git $ZSH_CUSTOM/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
+
+# Install fonts
+curl -OL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraMono.tar.xz
+
+# Extract the tar.xz file to the system-wide fonts directory
+sudo mkdir -p /usr/local/share/fonts
+sudo tar -xvJf FiraMono.tar.xz -C /usr/local/share/fonts
+
+rm FiraMono.tar.xz
+
+# Update the font cache
+fc-cache -fv
+
+# Add the necessary line at the top
+sed -i '1s/^/typeset -g POWERLEVEL9K_INSTANT_PROMPT=off\n/' ~/.zshrc
+
+# Comment out any existing POWERLEVEL9K_MODE or ZSH_THEME lines
+sed -i 's/^export POWERLEVEL9K_MODE/#&/' ~/.zshrc
+sed -i 's/^export ZSH_THEME/#&/' ~/.zshrc
+
+# Add new POWERLEVEL9K_MODE and ZSH_THEME lines before sourcing oh-my-zsh
+sed -i '/^source $ZSH\/oh-my-zsh.sh/i export POWERLEVEL9K_MODE="nerdfont-complete"\nexport ZSH_THEME="powerlevel10k/powerlevel10k"\n' ~/.zshrc
+
+# Inform the user
+echo "Updated ~/.zshrc with POWERLEVEL9K_MODE and ZSH_THEME."
+
+# Add plugins
+sed -i 's/^plugins=(.*)$/plugins=(git zsh-autosuggestions zsh-syntax-highlighting)/' ~/.zshrc
+
+# Uncomment and update the ENABLE_CORRECTION line
+sed -i 's/^# ENABLE_CORRECTION="true"/ENABLE_CORRECTION="true"/' ~/.zshrc
+
+clear
+
+# Inform the user
+echo "Type the following to setup your preferences:"
+echo "source ~/.zshrc; p10k configure"
+
