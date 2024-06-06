@@ -184,7 +184,13 @@ vim.api.nvim_set_keymap('n', '<leader>ff', '<cmd>Telescope find_files<cr>', { no
 vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>Telescope live_grep<cr>', { noremap = true, silent = true })
 
 -- Key binding to search the home directory
-vim.api.nvim_set_keymap('n', '<leader>fh', ':Telescope find_files search_dirs={"~"}<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>sh', ':Telescope find_files search_dirs={"~"}<CR>', { noremap = true, silent = true })
+
+-- Key mapping for showing command history
+vim.api.nvim_set_keymap('n', '<leader>ch', "<cmd>Telescope command_history<CR>", { noremap = true, silent = true })
+
+-- Key mapping for showing file history
+vim.api.nvim_set_keymap('n', '<leader>fh', "<cmd>Telescope oldfiles<CR>", { noremap = true, silent = true })
 
 -- LSP settings
 local lspconfig = require('lspconfig')
