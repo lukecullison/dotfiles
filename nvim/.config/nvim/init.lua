@@ -49,10 +49,22 @@ vim.cmd [[
 ]]
 
 -- Install packer.nvim if not installed
-local install_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
-if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-  vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-  vim.cmd 'packadd packer.nvim'
+-- local install_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
+-- if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+--   vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+--   vim.cmd 'packadd packer.nvim'
+-- end
+
+-- Ensure packer.nvim is installed
+local ensure_packer = function()
+  local fn = vim.fn
+  local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+  if fn.empty(fn.glob(install_path)) > 0 then
+    fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+    vim.cmd [[packadd packer.nvim]]
+    return true
+  end
+  return false
 end
 
 -- Autocommand to reload Neovim whenever you save the init.lua file
@@ -63,12 +75,14 @@ vim.cmd([[
   augroup end
 ]])
 
-
 -- Navigate vim panes better
 vim.keymap.set('n', '<c-k>', ':wincmd k<CR>')
 vim.keymap.set('n', '<c-j>', ':wincmd j<CR>')
 vim.keymap.set('n', '<c-h>', ':wincmd h<CR>')
 vim.keymap.set('n', '<c-l>', ':wincmd l<CR>')
+
+-- Ensure Packer
+local packer_bootstrap = ensure_packer()
 
 -- Plugin management using packer.nvim
 require('packer').startup(function(use)
@@ -144,6 +158,42 @@ require('packer').startup(function(use)
     end,
   }
 
+  -- nvim-tree
+  use {
+    'kyazdani42/nvim-tree.lua',
+    requires = {
+      'kyazdani42/nvim-web-devicons', -- optional, for file icons
+    },
+    config = function()
+      require'nvim-tree'.setup {
+        -- Add your config here
+        disable_netrw       = true,
+        hijack_netrw        = true,
+        open_on_tab         = false,
+        hijack_cursor       = false,
+        update_cwd          = false,
+        update_focused_file = {
+          enable      = true,
+          update_cwd  = true,
+          ignore_list = {}
+        },
+        system_open = {
+          cmd  = nil,
+          args = {}
+        },
+        view = {
+          width = 30,
+          side = 'left',
+        }
+      }
+    end
+  }
+
+  -- Automatically set up your configuration after cloning packer.nvim
+  if packer_bootstrap then
+    require('packer').sync()
+  end
+
 end)
 
 -- Colorscheme setup
@@ -168,6 +218,9 @@ function ReplaceVar()
   local new_var = vim.fn.input("New variable: ")
   vim.cmd("%s/\\<" .. old_var .. "\\>/" .. new_var .. "/gc")
 end
+
+-- Keybinding to toggle the undo tree
+vim.api.nvim_set_keymap('n', '<leader>t', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
 
 -- Add a keybinding for replace with confirmation
 vim.api.nvim_set_keymap('n', '<leader>sr', ':lua ReplaceVar()<CR>', { noremap = true, silent = false })
@@ -336,12 +389,31 @@ require('telescope').setup{
     defaults = {
         -- Default configuration for Telescope goes here:
         -- config_key = value,
+        
+        vimgrep_arguments = {
+            'rg',
+            '--color=never',
+            '--no-heading',
+            '--with-filename',
+            '--line-number',
+            '--column',
+            '--smart-case'
+        },
+
         mappings = {
             i = {
                 -- map actions.which_key to <C-h> (default: <C-/>)
                 -- actions.which_key shows the mappings for your picker,
                 -- e.g. git_{create, delete, ...}_branch for the git_branches picker
-                ["<C-h>"] = "which_key"
+                ["<C-h>"] = "which_key",
+                ["<C-j>"] = "move_selection_next",
+                ["<C-k>"] = "move_selection_previous",
+                ["<C-x>"] = "close"
+            },
+            n = {
+                ["<C-c>"] = "close",
+                ["<C-j>"] = "move_selection_next",
+                ["<C-k>"] = "move_selection_previous",
             }
         }
     },
