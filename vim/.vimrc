@@ -41,6 +41,13 @@ augroup LineNumberHighlight
   highlight CursorLineNr ctermfg=Yellow guifg=Yellow
 augroup END
 
+set relativenumber
+augroup numbertoggle
+  autocmd!
+  autocmd BufEnter,FocusGained,InsertLeave,WinEnter * set relativenumber
+  autocmd BufLeave,FocusLost,InsertEnter,WinLeave * set norelativenumber
+augroup END
+
 " Navigate Vim panes better
 nnoremap <c-k> :wincmd k<CR>
 nnoremap <c-j> :wincmd j<CR>

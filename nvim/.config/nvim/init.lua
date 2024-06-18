@@ -165,6 +165,7 @@ require('packer').startup(function(use)
       'kyazdani42/nvim-web-devicons', -- optional, for file icons
     },
     config = function()
+      
       require'nvim-tree'.setup {
         -- Add your config here
         disable_netrw       = true,
@@ -172,6 +173,14 @@ require('packer').startup(function(use)
         open_on_tab         = false,
         hijack_cursor       = false,
         update_cwd          = false,
+        git = {
+            enable = true,
+            ignore = false,
+        },
+        filters = {
+            dotfiles = false,
+            custom = {},
+        },
         update_focused_file = {
           enable      = true,
           update_cwd  = true,
@@ -327,9 +336,9 @@ vim.keymap.set("n", "<C-t>", function() harpoon:list():select(2) end)
 vim.keymap.set("n", "<C-n>", function() harpoon:list():select(3) end)
 vim.keymap.set("n", "<C-s>", function() harpoon:list():select(4) end)
 
--- Toggle previous & next buffers stored within Harpoon list
-vim.keymap.set("n", "<C-S-P>", function() harpoon:list():prev() end)
-vim.keymap.set("n", "<C-S-N>", function() harpoon:list():next() end)
+-- toggle previous & next buffers stored within Harpoon list
+vim.keymap.set("n", "<leader>p", function() harpoon:list():prev() end)
+vim.keymap.set("n", "<leader>n", function() harpoon:list():next() end)
 
 -- Treesitter setup
 require'nvim-treesitter.configs'.setup {
@@ -390,6 +399,10 @@ require('telescope').setup{
         -- Default configuration for Telescope goes here:
         -- config_key = value,
         
+        -- Increase search depth and file limit
+        -- find_command = { "fd", "--type", "f", "--hidden", "--follow", "--max-depth", "10", "--max-results", "100000" },
+        find_command = { "fd", "--type", "f", "--hidden", "--no-ignore", "--follow", "--max-depth", "12", "--max-results", "100000" },
+
         vimgrep_arguments = {
             'rg',
             '--color=never',
@@ -397,6 +410,8 @@ require('telescope').setup{
             '--with-filename',
             '--line-number',
             '--column',
+            '--hidden',
+            '--no-ignore',
             '--smart-case'
         },
 
