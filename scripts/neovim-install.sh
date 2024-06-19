@@ -3,16 +3,21 @@
 # Exit script on any error
 set -e
 
+# Function to install dependencies on Arch
+install_dependencies_arch() {
+  sudo pacman -S --noconfirm git libtool autoconf automake cmake pkg-config unzip curl clang ripgrep tmux neovim stow
+}
+
 # Function to install dependencies on Ubuntu
 install_dependencies_ubuntu() {
   sudo apt-get update
-  sudo apt-get install -y git build-essential libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl clang ripgrep tmux
+  sudo apt-get install -y git build-essential libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl clang ripgrep tmux neovim stow
 }
 
 # Function to install dependencies on Red Hat-based systems
 install_dependencies_redhat() {
   sudo yum groupinstall -y 'Development Tools'
-  sudo yum install -y git libtool autoconf automake cmake gcc-c++ make pkgconfig unzip curl clang clang-tools-extra ripgrep tmux
+  sudo yum install -y git libtool autoconf automake cmake gcc-c++ make pkgconfig unzip curl clang clang-tools-extra ripgrep tmux stow
 }
 
 # Function to install Neovim in the home directory, handle existing neovim directory, and clean up
@@ -74,6 +79,9 @@ fi
 
 # Install dependencies based on the operating system
 case $OS in
+  arch)
+    install_dependencies_arch
+    ;;
   ubuntu)
     install_dependencies_ubuntu
     ;;
@@ -97,11 +105,15 @@ else
 fi
 
 # Clone the Neovim configuration repository
-if [ -d $HOME/.config/nvim ]; then
-  rm -rf $HOME/.config/nvim.bak
-  mv $HOME/.config/nvim $HOME/.config/nvim.bak
-fi
-git clone https://github.com/lukecullison/neovim-config.git ~/.config/nvim
+# if [ -d $HOME/.config/nvim ]; then
+#   rm -rf $HOME/.config/nvim.bak
+#   mv $HOME/.config/nvim $HOME/.config/nvim.bak
+# fi
+# git clone https://github.com/lukecullison/neovim-config.git ~/.config/nvim
+
+# Install neovim using stow
+cd ../
+/usr/bin/stow nvim
 
 # Install packer.nvim
 install_packer
@@ -110,4 +122,3 @@ install_packer
 nvim --headless +PackerInstall +qall
 
 echo "Neovim configuration setup complete!"
-#echo "Neovim v0.9.5 and configuration setup complete!"

@@ -114,7 +114,7 @@ source $ZSH/oh-my-zsh.sh
 alias golowlevel="cd $HOME/lowlevel"
 alias goneoconf="cd $HOME/.config/nvim"
 alias godotfiles="cd $HOME/dotfiles"
-alias vim=nvim
+alias vim="nvim"
 
 # For leaving text on the screen after q out of less
 export LESS='-R -X'
