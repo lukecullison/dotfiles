@@ -1,3 +1,16 @@
+-- Load settings
+require('settings.options')
+require('settings.keymaps')
+require('settings.autocommands')
+
+-- Load plugins
+require('plugins')
+
+-- Load plugin configurations
+-- require('plugins.telescope')
+-- require('plugins.treesitter')
+-- require('plugins.lsp')
+
 -- Basic settings
 vim.cmd('syntax enable')
 vim.cmd('set background=dark')
@@ -13,6 +26,10 @@ vim.o.ignorecase = true  -- Case insensitive searching
 vim.o.smartcase = true   -- Case sensitive if search contains uppercase
 
 -- Enable line numbers
+vim.opt.number = true
+
+-- Enable relative line numbers
+vim.opt.relativenumber = true
 vim.opt.number = true
 
 -- Use jj instead of Esc
@@ -146,6 +163,8 @@ require('packer').startup(function(use)
     branch = "harpoon2",
     requires = { {"nvim-lua/plenary.nvim"} }
   }
+
+  use 'ThePrimeagen/vim-be-good'
 
   use {
     "alexghergh/nvim-tmux-navigation",
