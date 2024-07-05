@@ -116,6 +116,9 @@ alias goneoconf="cd $HOME/.config/nvim"
 alias godotfiles="cd $HOME/dotfiles"
 alias goleetcode="cd $HOME/leetcode"
 alias vim=nvim
+alias c=clear
+
+# alias tmux='tmux -f ~/.config/tmux.conf'
 
 # For leaving text on the screen after q out of less
 export LESS='-R -X'

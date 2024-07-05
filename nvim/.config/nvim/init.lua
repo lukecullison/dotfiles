@@ -47,6 +47,14 @@ vim.g.rst_style = 1
 -- Enable dynamic 'formatexpr' for R and reStructuredText
 vim.g.rrst_dynamic_comments = 1
 
+-- Enable syntax highlighting
+-- vim.cmd('syntax on')
+
+-- Add filetype detection for .conf files
+vim.api.nvim_exec([[
+  autocmd BufRead,BufNewFile *.conf set filetype=conf
+]], false)
+
 -- Optionally, you can add specific settings for reStructuredText files
 vim.cmd [[
   augroup rst
@@ -165,6 +173,9 @@ require('packer').startup(function(use)
   }
 
   use 'ThePrimeagen/vim-be-good'
+
+    -- Rust tools
+  use 'simrat39/rust-tools.nvim'
 
   use {
     "alexghergh/nvim-tmux-navigation",
@@ -302,6 +313,23 @@ lspconfig.clangd.setup{
   end
 }
 
+-- Rust
+require('rust-tools').setup({
+  server = {
+    on_attach = on_attach,
+    settings = {
+      ["rust-analyzer"] = {
+        cargo = {
+          allFeatures = true,
+        },
+        checkOnSave = {
+          command = "clippy",
+        },
+      },
+    },
+  },
+})
+
 -- Autocompletion settings
 local cmp = require'cmp'
 cmp.setup({
@@ -359,9 +387,13 @@ vim.keymap.set("n", "<C-s>", function() harpoon:list():select(4) end)
 vim.keymap.set("n", "<leader>p", function() harpoon:list():prev() end)
 vim.keymap.set("n", "<leader>n", function() harpoon:list():next() end)
 
+-- Rust tools keybindings
+vim.api.nvim_set_keymap('n', '<leader>rr', ':RustRun<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>rd', ':RustDebuggables<CR>', { noremap = true, silent = true })
+
 -- Treesitter setup
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = { "c", "cpp", "go", "lua", "python", "javascript", "html", "css" },
+  ensure_installed = { "c", "cpp", "go", "lua", "python", "javascript", "html", "css", "rust" },
   highlight = {
     enable = true,
   },
