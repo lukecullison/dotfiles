@@ -1,2 +1,4 @@
 nvim/.config/nvim/undo/
 nvim/.config/nvim/plugin/
+**/undo/
+**/plugin/
