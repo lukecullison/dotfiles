@@ -106,6 +106,10 @@ vim.keymap.set('n', '<c-j>', ':wincmd j<CR>')
 vim.keymap.set('n', '<c-h>', ':wincmd h<CR>')
 vim.keymap.set('n', '<c-l>', ':wincmd l<CR>')
 
+-- Run macro on all files in the current directory
+vim.api.nvim_set_keymap('n', '<leader>m', ':args *.py | argdo normal @b | update<CR>', { noremap = true, silent = true })
+--vim.api.nvim_set_keymap('n', '<leader>me', ':args * | argdo if line(".") == line("$") | break | else | normal @b | endif | update<CR>', { noremap = true, silent = true })
+
 -- Ensure Packer
 local packer_bootstrap = ensure_packer()
 
@@ -287,6 +291,40 @@ vim.api.nvim_set_keymap('n', '<leader>fh', "<cmd>Telescope oldfiles<CR>", { nore
 -- LSP settings
 local lspconfig = require('lspconfig')
 
+-- Configure pyright for Python LSP
+lspconfig.pyright.setup{}
+
+-- Configure diagnostic-languageserver to use pylint
+lspconfig.diagnosticls.setup {
+  filetypes = { 'python' },
+  init_options = {
+    linters = {
+      pylint = {
+        sourceName = 'pylint',
+        command = 'pylint',
+        args = {
+          '--output-format', 'text',
+          '--score', 'no',
+          '--msg-template', '[{line},{column}] {msg_id} {msg} ({symbol})',
+          '%file'
+        },
+        formatPattern = {
+          '^\\[(\\d+),(\\d+)\\] ([a-zA-Z0-9]+) (.*) \\(([a-zA-Z0-9\\-_]+)\\)$',
+          { line = 1, column = 2, message = { 4 }, security = 3 }
+        },
+        securities = {
+          informational = 'hint',
+          refactor = 'info',
+          convention = 'info',
+          warning = 'warning',
+          error = 'error',
+          fatal = 'error'
+        }
+      }
+    }
+  }
+}
+
 -- Go language server
 lspconfig.gopls.setup{}
 
@@ -395,7 +433,8 @@ vim.api.nvim_set_keymap('n', '<leader>rd', ':RustDebuggables<CR>', { noremap = t
 require'nvim-treesitter.configs'.setup {
   ensure_installed = { "c", "cpp", "go", "lua", "python", "javascript", "html", "css", "rust" },
   highlight = {
-    enable = true,
+    enable = false,
+    --enable = true,
   },
 }
 
