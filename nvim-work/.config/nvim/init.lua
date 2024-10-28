@@ -1,3 +1,16 @@
+-- Load settings
+require('settings.options')
+require('settings.keymaps')
+require('settings.autocommands')
+
+-- Load plugins
+require('plugins')
+
+-- Load plugin configurations
+-- require('plugins.telescope')
+-- require('plugins.treesitter')
+-- require('plugins.lsp')
+
 -- Basic settings
 vim.cmd('syntax enable')
 vim.cmd('set background=dark')
@@ -15,6 +28,10 @@ vim.o.smartcase = true   -- Case sensitive if search contains uppercase
 -- Enable line numbers
 vim.opt.number = true
 
+-- Enable relative line numbers
+vim.opt.relativenumber = true
+vim.opt.number = true
+
 -- Use jj instead of Esc
 vim.api.nvim_set_keymap('i', 'jj', '<Esc>', { noremap = true, silent = true })
 
@@ -29,6 +46,14 @@ vim.g.rst_style = 1
 
 -- Enable dynamic 'formatexpr' for R and reStructuredText
 vim.g.rrst_dynamic_comments = 1
+
+-- Enable syntax highlighting
+-- vim.cmd('syntax on')
+
+-- Add filetype detection for .conf files
+vim.api.nvim_exec([[
+  autocmd BufRead,BufNewFile *.conf set filetype=conf
+]], false)
 
 -- Optionally, you can add specific settings for reStructuredText files
 vim.cmd [[
@@ -48,25 +73,12 @@ vim.cmd [[
   augroup END
 ]]
 
-vim.opt.relativenumber = true
-
-vim.cmd([[
-  augroup numbertoggle
-    autocmd!
-    autocmd BufEnter,FocusGained,InsertLeave,WinEnter * set relativenumber
-    autocmd BufLeave,FocusLost,InsertEnter,WinLeave * set norelativenumber
-  augroup END
-]])
-
--- Remap `j` and `k` to include `zz` to keep the cursor centered
--- vim.api.nvim_set_keymap('n', 'j', 'jzz', { noremap = true, silent = true })
--- vim.api.nvim_set_keymap('n', 'k', 'kzz', { noremap = true, silent = true })
-
--- Optional: Also remap `G` (go to line) and other motions if desired
--- vim.api.nvim_set_keymap('n', 'G', 'Gzz', { noremap = true, silent = true })
--- vim.api.nvim_set_keymap('n', 'gg', 'ggzz', { noremap = true, silent = true })
--- vim.api.nvim_set_keymap('n', '<C-o>', '<C-o>zz', { noremap = true, silent = true })
--- vim.api.nvim_set_keymap('n', '<C-i>', '<C-i>zz', { noremap = true, silent = true })
+-- Install packer.nvim if not installed
+-- local install_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
+-- if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+--   vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+--   vim.cmd 'packadd packer.nvim'
+-- end
 
 -- Ensure packer.nvim is installed
 local ensure_packer = function()
@@ -93,6 +105,10 @@ vim.keymap.set('n', '<c-k>', ':wincmd k<CR>')
 vim.keymap.set('n', '<c-j>', ':wincmd j<CR>')
 vim.keymap.set('n', '<c-h>', ':wincmd h<CR>')
 vim.keymap.set('n', '<c-l>', ':wincmd l<CR>')
+
+-- Run macro on all files in the current directory
+vim.api.nvim_set_keymap('n', '<leader>m', ':args *.py | argdo normal @b | update<CR>', { noremap = true, silent = true })
+--vim.api.nvim_set_keymap('n', '<leader>me', ':args * | argdo if line(".") == line("$") | break | else | normal @b | endif | update<CR>', { noremap = true, silent = true })
 
 -- Ensure Packer
 local packer_bootstrap = ensure_packer()
@@ -160,7 +176,10 @@ require('packer').startup(function(use)
     requires = { {"nvim-lua/plenary.nvim"} }
   }
 
-  use 'ThePrimeagen/vim-be-good' -- The game
+  use 'ThePrimeagen/vim-be-good'
+
+    -- Rust tools
+  use 'simrat39/rust-tools.nvim'
 
   use {
     "alexghergh/nvim-tmux-navigation",
@@ -272,6 +291,40 @@ vim.api.nvim_set_keymap('n', '<leader>fh', "<cmd>Telescope oldfiles<CR>", { nore
 -- LSP settings
 local lspconfig = require('lspconfig')
 
+-- Configure pyright for Python LSP
+lspconfig.pyright.setup{}
+
+-- Configure diagnostic-languageserver to use pylint
+lspconfig.diagnosticls.setup {
+  filetypes = { 'python' },
+  init_options = {
+    linters = {
+      pylint = {
+        sourceName = 'pylint',
+        command = 'pylint',
+        args = {
+          '--output-format', 'text',
+          '--score', 'no',
+          '--msg-template', '[{line},{column}] {msg_id} {msg} ({symbol})',
+          '%file'
+        },
+        formatPattern = {
+          '^\\[(\\d+),(\\d+)\\] ([a-zA-Z0-9]+) (.*) \\(([a-zA-Z0-9\\-_]+)\\)$',
+          { line = 1, column = 2, message = { 4 }, security = 3 }
+        },
+        securities = {
+          informational = 'hint',
+          refactor = 'info',
+          convention = 'info',
+          warning = 'warning',
+          error = 'error',
+          fatal = 'error'
+        }
+      }
+    }
+  }
+}
+
 -- Go language server
 lspconfig.gopls.setup{}
 
@@ -293,10 +346,27 @@ lspconfig.clangd.setup{
     -- Rename symbol
     buf_set_keymap('n', 'rn', '<Cmd>lua vim.lsp.buf.rename()<CR>', opts)
     -- Code actions
-    buf_set_keymap('n', '<leader>ca', '<Cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+    buf_set_keymap('n', 'ca', '<Cmd>lua vim.lsp.buf.code_action()<CR>', opts)
 
   end
 }
+
+-- Rust
+require('rust-tools').setup({
+  server = {
+    on_attach = on_attach,
+    settings = {
+      ["rust-analyzer"] = {
+        cargo = {
+          allFeatures = true,
+        },
+        checkOnSave = {
+          command = "clippy",
+        },
+      },
+    },
+  },
+})
 
 -- Autocompletion settings
 local cmp = require'cmp'
@@ -355,11 +425,16 @@ vim.keymap.set("n", "<C-s>", function() harpoon:list():select(4) end)
 vim.keymap.set("n", "<leader>p", function() harpoon:list():prev() end)
 vim.keymap.set("n", "<leader>n", function() harpoon:list():next() end)
 
+-- Rust tools keybindings
+vim.api.nvim_set_keymap('n', '<leader>rr', ':RustRun<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>rd', ':RustDebuggables<CR>', { noremap = true, silent = true })
+
 -- Treesitter setup
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = { "c", "cpp", "go", "lua", "python", "javascript", "html", "css" },
+  ensure_installed = { "c", "cpp", "go", "lua", "python", "javascript", "html", "css", "rust" },
   highlight = {
-    enable = true,
+    enable = false,
+    --enable = true,
   },
 }
 
@@ -385,7 +460,7 @@ require('nvim-autopairs').setup{}
 require('lualine').setup {
   options = {
     icons_enabled = true,
-    theme = 'catppuccin',
+    theme = 'tokyonight',
     component_separators = { left = '', right = ''},
     section_separators = { left = '', right = ''},
   },
